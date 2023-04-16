@@ -1,4 +1,4 @@
-package com.polovyi.ivan.tutorials.v4;
+package com.polovyi.ivan.tutorials.queries;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -16,18 +16,15 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.StoredFields;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause;
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.IOUtils;
 
-public class BooleanQueryExample {
+public class PrefixQueryExample {
 
     public static Directory directory;
 
@@ -37,41 +34,19 @@ public class BooleanQueryExample {
         String fieldName = "document-text";
         createDoc(fieldName);
 
-        TermQuery javaTermQuery = new TermQuery(new Term(fieldName, "java"));
-        TermQuery applicationTermQuery = new TermQuery(new Term(fieldName, "application"));
-        System.out.println("<< BooleanQuery Doc must contain 'java' and 'application'>>");
-        Query booleanQuery1
-                = new BooleanQuery.Builder()
-                .add(javaTermQuery, BooleanClause.Occur.MUST)
-                .add(applicationTermQuery, BooleanClause.Occur.MUST)
-                .build();
-        Set<Document> documents1 = searchDocs(booleanQuery1);
-        assertEquals(1, documents1.size());
-        documents1.forEach(System.out::println);
+        Term termOpen = new Term(fieldName, "open");
+        Query prefixOpenQuery = new PrefixQuery(termOpen);
+        Set<Document> documentsWithPrefixOpen = searchDocs(prefixOpenQuery);
+        assertEquals(1, documentsWithPrefixOpen.size());
+        System.out.println("<< Prefix query by \"open\" prefix >>");
+        documentsWithPrefixOpen.forEach(System.out::println);
 
-        System.out.println("<< BooleanQuery Doc must contain 'search' but not 'application'>>");
-        TermQuery searchTermQuery = new TermQuery(new Term(fieldName, "search"));
-
-        Query booleanQuery2
-                = new BooleanQuery.Builder()
-                .add(searchTermQuery, BooleanClause.Occur.MUST)
-                .add(applicationTermQuery, Occur.MUST_NOT)
-                .build();
-        Set<Document> documents2 = searchDocs(booleanQuery2);
-        assertEquals(2, documents2.size());
-        documents2.forEach(System.out::println);
-
-        System.out.println("<< BooleanQuery Doc must contain 'java' or 'elasticsearch'>>");
-        TermQuery elasticSearchTermQuery = new TermQuery(new Term(fieldName, "elasticsearch"));
-
-        Query booleanQuery3
-                = new BooleanQuery.Builder()
-                .add(elasticSearchTermQuery, Occur.SHOULD)
-                .add(applicationTermQuery, Occur.SHOULD)
-                .build();
-        Set<Document> documents3 = searchDocs(booleanQuery3);
-        assertEquals(2, documents3.size());
-        documents3.forEach(System.out::println);
+        System.out.println("<< Prefix query by \"app\" prefix >>");
+        Term appTerm = new Term(fieldName, "app");
+        Query prefixAppQuery = new PrefixQuery(appTerm);
+        Set<Document> documentsWithPrefixApp = searchDocs(prefixAppQuery);
+        assertEquals(1, documentsWithPrefixApp.size());
+        documentsWithPrefixApp.forEach(System.out::println);
 
         directory.close();
         IOUtils.rm(indexPath);

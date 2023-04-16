@@ -1,4 +1,4 @@
-package com.polovyi.ivan.tutorials.v4;
+package com.polovyi.ivan.tutorials.queries;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -15,16 +15,16 @@ import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.StoredFields;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.FuzzyQuery;
 import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.PhraseQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.IOUtils;
 
-public class PhraseQueryExample {
+public class FuzzyQueryExample {
 
     public static Directory directory;
 
@@ -34,14 +34,17 @@ public class PhraseQueryExample {
         String fieldName = "document-text";
         createDoc(fieldName);
 
-        System.out.println("<< PhraseQuery  >>");
-        Query phraseQuery = new PhraseQuery(
-                10, fieldName, new BytesRef("java"), new BytesRef("application"));
-
-        Set<Document> documents = searchDocs(phraseQuery);
+        System.out.println("<< FuzzyQuery for jawa :)  >>");
+        Query fuzzyQuery1 = new FuzzyQuery(new Term(fieldName, "jawa"));
+        Set<Document> documents = searchDocs(fuzzyQuery1);
         assertEquals(1, documents.size());
         documents.forEach(System.out::println);
 
+        System.out.println("<< FuzzyQuery for slr :)  >>");
+        Query fuzzyQuery2 = new FuzzyQuery(new Term(fieldName, "slr"));
+        Set<Document> documents2 = searchDocs(fuzzyQuery2);
+        assertEquals(1, documents.size());
+        documents2.forEach(System.out::println);
         directory.close();
         IOUtils.rm(indexPath);
     }
@@ -51,7 +54,6 @@ public class PhraseQueryExample {
         String text1 = "Lucene is a Java library that lets you add a search to the application";
         String text2 = "Apache Lucene is an open-source, scalable, search storage engine";
         String text3 = "Two of the most popular search engines Elasticsearch and Apache Solr are built on top of Lucene";
-
         Document document1 = new Document();
         document1.add(new TextField(fieldName, text1, Store.YES));
         Document document2 = new Document();

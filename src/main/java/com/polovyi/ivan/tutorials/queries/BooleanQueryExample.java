@@ -1,4 +1,4 @@
-package com.polovyi.ivan.tutorials.v4;
+package com.polovyi.ivan.tutorials.queries;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -15,16 +15,19 @@ import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.StoredFields;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.BooleanClause;
+import org.apache.lucene.search.BooleanClause.Occur;
+import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.TermRangeQuery;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.IOUtils;
 
-public class TermRangeQueryExample {
+public class BooleanQueryExample {
 
     public static Directory directory;
 
@@ -34,22 +37,50 @@ public class TermRangeQueryExample {
         String fieldName = "document-text";
         createDoc(fieldName);
 
-        System.out.println("<< Search by more then one Term apache lucene>>");
-        Query queryWithMultipleTerms = new TermRangeQuery(fieldName, new BytesRef("j"), new BytesRef("k"), true, true);
-        Set<Document> documents = searchDocs(queryWithMultipleTerms);
-        assertEquals(1, documents.size());
-        documents.forEach(System.out::println);
+        TermQuery javaTermQuery = new TermQuery(new Term(fieldName, "java"));
+        TermQuery applicationTermQuery = new TermQuery(new Term(fieldName, "application"));
+        System.out.println("<< BooleanQuery Doc must contain 'java' and 'application'>>");
+        Query booleanQuery1
+                = new BooleanQuery.Builder()
+                .add(javaTermQuery, BooleanClause.Occur.MUST)
+                .add(applicationTermQuery, BooleanClause.Occur.MUST)
+                .build();
+        Set<Document> documents1 = searchDocs(booleanQuery1);
+        assertEquals(1, documents1.size());
+        documents1.forEach(System.out::println);
+
+        System.out.println("<< BooleanQuery Doc must contain 'search' but not 'application'>>");
+        TermQuery searchTermQuery = new TermQuery(new Term(fieldName, "search"));
+
+        Query booleanQuery2
+                = new BooleanQuery.Builder()
+                .add(searchTermQuery, BooleanClause.Occur.MUST)
+                .add(applicationTermQuery, Occur.MUST_NOT)
+                .build();
+        Set<Document> documents2 = searchDocs(booleanQuery2);
+        assertEquals(2, documents2.size());
+        documents2.forEach(System.out::println);
+
+        System.out.println("<< BooleanQuery Doc must contain 'java' or 'elasticsearch'>>");
+        TermQuery elasticSearchTermQuery = new TermQuery(new Term(fieldName, "elasticsearch"));
+
+        Query booleanQuery3
+                = new BooleanQuery.Builder()
+                .add(elasticSearchTermQuery, Occur.SHOULD)
+                .add(applicationTermQuery, Occur.SHOULD)
+                .build();
+        Set<Document> documents3 = searchDocs(booleanQuery3);
+        assertEquals(2, documents3.size());
+        documents3.forEach(System.out::println);
 
         directory.close();
         IOUtils.rm(indexPath);
     }
 
     public static void createDoc(String fieldName) throws IOException {
-        // Declare text to be added to an index
         String text1 = "Lucene is a Java library that lets you add a search to the application";
         String text2 = "Apache Lucene is an open-source, scalable, search storage engine";
         String text3 = "Two of the most popular search engines Elasticsearch and Apache Solr are built on top of Lucene";
-
         Document document1 = new Document();
         document1.add(new TextField(fieldName, text1, Store.YES));
         Document document2 = new Document();

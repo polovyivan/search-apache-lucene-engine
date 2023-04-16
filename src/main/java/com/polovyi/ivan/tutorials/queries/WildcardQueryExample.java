@@ -1,4 +1,4 @@
-package com.polovyi.ivan.tutorials.v4;
+package com.polovyi.ivan.tutorials.queries;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -19,12 +19,12 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.WildcardQuery;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.IOUtils;
 
-public class TermQueryExample {
+public class WildcardQueryExample {
 
     public static Directory directory;
 
@@ -34,36 +34,43 @@ public class TermQueryExample {
         String fieldName = "document-text";
         createDoc(fieldName);
 
-        System.out.println("<< Search by Term lucene >>");
-        Query termLuceneQuery = new TermQuery(new Term(fieldName, "lucene"));
-        Set<Document> documentsWithLuceneTerm = searchDocs(termLuceneQuery);
-        assertEquals(3, documentsWithLuceneTerm.size());
-        documentsWithLuceneTerm.forEach(System.out::println);
+//        *	matches any character sequence (including the empty one)
+//        ?	matches any single character
+//        '\'	escape character
+//
+        System.out.println("<< WildcardQuery a??lication >>");
+        Query singleCharacterWildcardQuery = new WildcardQuery(new Term(fieldName, "a??lication"));
+        Set<Document> documentsWithSingleCharacterWildcardQuery = searchDocs(singleCharacterWildcardQuery);
+        assertEquals(1, documentsWithSingleCharacterWildcardQuery.size());
+        documentsWithSingleCharacterWildcardQuery.forEach(System.out::println);
 
-        System.out.println("<< Search by Term apache >>");
-        Query termApacheQuery = new TermQuery(new Term(fieldName, "apache"));
-        Set<Document> documentsWithApacheTerm = searchDocs(termApacheQuery);
-        assertEquals(2, documentsWithApacheTerm.size());
-        documentsWithApacheTerm.forEach(System.out::println);
+        System.out.println("<< WildcardQuery * >>");
+        Query onlyWildcardQuery = new WildcardQuery(new Term(fieldName, "*"));
+        Set<Document> allDocuments = searchDocs(onlyWildcardQuery);
+        assertEquals(3, allDocuments.size());
+        allDocuments.forEach(System.out::println);
 
-        System.out.println("<< Search by Term java >>");
-        Query termJavaQuery = new TermQuery(new Term(fieldName, "java"));
-        Set<Document> documentsWithJavaTerm = searchDocs(termJavaQuery);
-        assertEquals(1, documentsWithJavaTerm.size());
-        documentsWithJavaTerm.forEach(System.out::println);
+        System.out.println("<< WildcardQuery ela* >>");
+        Query righSideWildcardQuery = new WildcardQuery(new Term(fieldName, "ela*"));
+        Set<Document> documentsWithRightSideWildcardQuery = searchDocs(righSideWildcardQuery);
+        assertEquals(1, documentsWithRightSideWildcardQuery.size());
+        documentsWithRightSideWildcardQuery.forEach(System.out::println);
 
-        System.out.println("<< Search by non existent Term database >>");
-        Query queryWithNonExistentTerm = new TermQuery(new Term(fieldName, "database"));
-        assertEquals(0, searchDocs(queryWithNonExistentTerm).size());
+        System.out.println("<< WildcardQuery *rary>>");
+        Query leftSideWildcardQuery = new WildcardQuery(new Term(fieldName, "*rary"));
+        Set<Document> documentsWithLeftSideWildcardQuery = searchDocs(leftSideWildcardQuery);
+        assertEquals(1, documentsWithLeftSideWildcardQuery.size());
+        documentsWithLeftSideWildcardQuery.forEach(System.out::println);
 
-        System.out.println("<< Search by more then one Term apache lucene>>");
-        Query queryWithMultipleTerms = new TermQuery(new Term(fieldName, "apache lucene"));
-        assertEquals(0, searchDocs(queryWithMultipleTerms).size());
+        System.out.println("<< WildcardQuery *bra*>>");
+        Query wildcardQuery = new WildcardQuery(new Term(fieldName, "*bra*"));
+        Set<Document> documentsWildcardQuery = searchDocs(wildcardQuery);
+        assertEquals(1, documentsWildcardQuery.size());
+        documentsWildcardQuery.forEach(System.out::println);
 
         directory.close();
         IOUtils.rm(indexPath);
     }
-
 
     public static void createDoc(String fieldName) throws IOException {
         // Declare text to be added to an index

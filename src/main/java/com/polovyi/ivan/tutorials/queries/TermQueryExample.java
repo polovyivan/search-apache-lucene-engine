@@ -1,4 +1,4 @@
-package com.polovyi.ivan.tutorials.v4;
+package com.polovyi.ivan.tutorials.queries;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -17,14 +17,14 @@ import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.StoredFields;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.IOUtils;
 
-public class PrefixQueryExample {
+public class TermQueryExample {
 
     public static Directory directory;
 
@@ -34,22 +34,36 @@ public class PrefixQueryExample {
         String fieldName = "document-text";
         createDoc(fieldName);
 
-        System.out.println("<< Prefix termQuery  >>");
-        Term termOpen = new Term(fieldName, "open");
-        Query prefixOpenQuery = new PrefixQuery(termOpen);
-        Set<Document> documentsWithPrefixOpen = searchDocs(prefixOpenQuery);
-        assertEquals(1, documentsWithPrefixOpen.size());
-        documentsWithPrefixOpen.forEach(System.out::println);
+        System.out.println("<< Search by Term lucene >>");
+        Query termLuceneQuery = new TermQuery(new Term(fieldName, "lucene"));
+        Set<Document> documentsWithLuceneTerm = searchDocs(termLuceneQuery);
+        assertEquals(3, documentsWithLuceneTerm.size());
+        documentsWithLuceneTerm.forEach(System.out::println);
 
-        Term appTerm = new Term(fieldName, "app");
-        Query prefixAppQuery = new PrefixQuery(appTerm);
-        Set<Document> documentsWithPrefixApp = searchDocs(prefixAppQuery);
-        assertEquals(1, documentsWithPrefixApp.size());
-        documentsWithPrefixApp.forEach(System.out::println);
+        System.out.println("<< Search by Term apache >>");
+        Query termApacheQuery = new TermQuery(new Term(fieldName, "apache"));
+        Set<Document> documentsWithApacheTerm = searchDocs(termApacheQuery);
+        assertEquals(2, documentsWithApacheTerm.size());
+        documentsWithApacheTerm.forEach(System.out::println);
+
+        System.out.println("<< Search by Term java >>");
+        Query termJavaQuery = new TermQuery(new Term(fieldName, "java"));
+        Set<Document> documentsWithJavaTerm = searchDocs(termJavaQuery);
+        assertEquals(1, documentsWithJavaTerm.size());
+        documentsWithJavaTerm.forEach(System.out::println);
+
+        System.out.println("<< Search by non existent Term database >>");
+        Query queryWithNonExistentTerm = new TermQuery(new Term(fieldName, "database"));
+        assertEquals(0, searchDocs(queryWithNonExistentTerm).size());
+
+        System.out.println("<< Search by more then one Term apache lucene>>");
+        Query queryWithMultipleTerms = new TermQuery(new Term(fieldName, "apache lucene"));
+        assertEquals(0, searchDocs(queryWithMultipleTerms).size());
 
         directory.close();
         IOUtils.rm(indexPath);
     }
+
 
     public static void createDoc(String fieldName) throws IOException {
         // Declare text to be added to an index
