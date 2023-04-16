@@ -1,4 +1,4 @@
-package com.polovyi.ivan.tutorials.v3;
+package com.polovyi.ivan.tutorials.analyzers;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -16,6 +16,7 @@ import org.apache.lucene.analysis.core.LetterTokenizer;
 import org.apache.lucene.analysis.core.SimpleAnalyzer;
 import org.apache.lucene.analysis.core.StopAnalyzer;
 import org.apache.lucene.analysis.core.WhitespaceAnalyzer;
+import org.apache.lucene.analysis.en.EnglishAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 
@@ -39,6 +40,9 @@ public class Analyzers {
 
         Set<String> usingStandardAnalyzer = analyzeText(text, new StandardAnalyzer());
         System.out.println("usingStandardAnalyzer =   " + usingStandardAnalyzer);
+
+        Set<String> englishAnalyzer = analyzeText(text, new EnglishAnalyzer());
+        System.out.println("usingEnglishAnalyzer =    " + englishAnalyzer);
 
         Analyzer customAnalyzer = new Analyzer() {
             @Override

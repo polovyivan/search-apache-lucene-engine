@@ -1,4 +1,4 @@
-package com.polovyi.ivan.tutorials.v1;
+package com.polovyi.ivan.tutorials.firstindex;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -24,7 +24,6 @@ import org.apache.lucene.util.IOUtils;
 public class FirstIndex {
 
     public static void main(String[] args) throws IOException, ParseException {
-
         // Get path
         Path indexPath = Files.createTempDirectory("test-index");
         // Create directory
@@ -76,6 +75,5 @@ public class FirstIndex {
         directory.close();
         // Remove directory with an index
         IOUtils.rm(indexPath);
-
     }
 }
