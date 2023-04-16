@@ -1,4 +1,4 @@
-package com.polovyi.ivan.tutorials.v2;
+package com.polovyi.ivan.tutorials.fields;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -26,8 +26,10 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.IOUtils;
 
-public class AnalyzedVsNotAnalyzedFields {
+public class LuceneFields {
 
+    private final static String INDEXED_NOT_ANALYZED_NOT_STORED_FIELD = "indexed-not-analyzed-not-stored";
+    private final static String INDEXED_ANALYZED_STORED_FIELD = "indexed-analyzed-stored";
     public static Directory directory;
 
     public static void main(String[] args) throws IOException, ParseException {
@@ -37,35 +39,35 @@ public class AnalyzedVsNotAnalyzedFields {
         IndexWriter indexWriter = new IndexWriter(directory, config);
 
         Document document1 = new Document();
-        document1.add(new StringField("not-stored-not-analyzed", "Simple text 1", Store.NO));
+        document1.add(new StringField(INDEXED_NOT_ANALYZED_NOT_STORED_FIELD, "Simple text 1", Store.NO));
 
-        // Another way o do the same as StringField
-        // FieldType type = new FieldType();
-        // type.setIndexOptions(IndexOptions.DOCS);
-        // type.setTokenized(false);
-        // type.setStored(false);
-        // document1.add(new Field("not-stored-not-analyzed", "Simple text 1", type));
+//         Another way o do the same as StringField
+//         FieldType type = new FieldType();
+//         type.setIndexOptions(IndexOptions.DOCS);
+//         type.setTokenized(false);
+//         type.setStored(false);
+//         document1.add(new Field(INDEXED_NOT_ANALYZED_NOT_STORED_FIELD, "Simple text 1", type));
 
         String document1Text = "Lucene is a Java library that lets you add a search to the application";
-        document1.add(new TextField("stored-analyzed-field", document1Text, Store.YES));
-
+        document1.add(new TextField(INDEXED_ANALYZED_STORED_FIELD, document1Text, Store.YES));
         indexWriter.addDocument(document1);
+
         indexWriter.close();
 
-        Query byId = new TermQuery(new Term("not-stored-not-analyzed", "Simple text 1"));
+        Query byId = new TermQuery(new Term(INDEXED_NOT_ANALYZED_NOT_STORED_FIELD, "Simple text 1"));
         Set<Document> documentsById = searchDocs(byId);
         assertEquals(1, documentsById.size());
-        System.out.println("Documents By not-stored-not-analyzed field");
+        System.out.println("<< Documents By " + INDEXED_NOT_ANALYZED_NOT_STORED_FIELD + " >>");
         printDocuments(documentsById);
 
-        Query bySingleTerm = new TermQuery(new Term("not-stored-not-analyzed", "text"));
+        Query bySingleTerm = new TermQuery(new Term(INDEXED_NOT_ANALYZED_NOT_STORED_FIELD, "text"));
         Set<Document> documentsBySingleTerm = searchDocs(bySingleTerm);
         assertEquals(0, documentsBySingleTerm.size());
 
-        Query byTerm = new TermQuery(new Term("stored-analyzed-field", "java"));
+        Query byTerm = new TermQuery(new Term(INDEXED_ANALYZED_STORED_FIELD, "java"));
         Set<Document> documentsByTerm = searchDocs(byTerm);
         assertEquals(1, documentsByTerm.size());
-        System.out.println("Documents By Term from stored-analyzed-field");
+        System.out.println("<< Documents By Term from " + INDEXED_ANALYZED_STORED_FIELD + " >>");
         printDocuments(documentsByTerm);
 
         directory.close();
@@ -74,9 +76,9 @@ public class AnalyzedVsNotAnalyzedFields {
 
     private static void printDocuments(Set<Document> documents) {
         documents.forEach(doc -> {
-            System.out.println("doc.not-stored-not-analyzed = " + doc.get("not-stored-not-analyzed"));
-            System.out.println("doc.stored-analyzed-field = " + doc.get("stored-analyzed-field"));
-            System.out.println("doc.analyzed-not-stored = " + doc.get("analyzed-not-stored"));
+            System.out.println("doc." + INDEXED_NOT_ANALYZED_NOT_STORED_FIELD + "= " + doc.get(
+                    INDEXED_NOT_ANALYZED_NOT_STORED_FIELD));
+            System.out.println("doc." + INDEXED_ANALYZED_STORED_FIELD + " = " + doc.get(INDEXED_ANALYZED_STORED_FIELD));
         });
     }
 
