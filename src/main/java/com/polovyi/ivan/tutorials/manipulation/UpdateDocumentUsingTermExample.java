@@ -1,4 +1,4 @@
-package com.polovyi.ivan.tutorials.v6;
+package com.polovyi.ivan.tutorials.manipulation;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -8,7 +8,6 @@ import java.util.HashSet;
 import java.util.Set;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
-import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
@@ -23,7 +22,7 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.IOUtils;
 
-public class DeleteDocumentUsingQueryExample {
+public class UpdateDocumentUsingTermExample {
 
     public static Directory directory;
 
@@ -31,16 +30,22 @@ public class DeleteDocumentUsingQueryExample {
         Path indexPath = Files.createDirectories(Paths.get("test-index"));
         directory = FSDirectory.open(indexPath);
         String fieldName = "document-text";
-        createDoc(fieldName);
+        String text1 = "Lucene is a Jawa library that lets you add a search to the application";
+        String text2 = "Apache Lucene is an open-source, scalable, search storage engine";
+        createDoc(fieldName, text1);
+        createDoc(fieldName, text2);
 
         Query matchAllDocsQuery = new MatchAllDocsQuery();
-        System.out.println("Before deleting");
+        System.out.println("<< Before updating by term >>");
         searchDocs(matchAllDocsQuery).stream()
                 .map(doc -> doc.get(fieldName))
                 .forEach(System.out::println);
 
-        deleteDocumentUsingTerm(new Term(fieldName, "java"));
-        System.out.println("After deleting");
+        Document newDocument = new Document();
+        newDocument.add(new TextField(fieldName, text1.replace("Jawa", "Java"), Store.YES));
+        updateDocumentUsingTerm(new Term(fieldName, "jawa"), newDocument);
+
+        System.out.println("<< After updating by term >>");
         searchDocs(matchAllDocsQuery).stream()
                 .map(doc -> doc.get(fieldName))
                 .forEach(System.out::println);
@@ -49,34 +54,17 @@ public class DeleteDocumentUsingQueryExample {
         IOUtils.rm(indexPath);
     }
 
-    public static void createDoc(String fieldName) throws IOException {
-        // Declare text to be added to an index
-        String text1 = "Lucene is a Java library that lets you add a search to the application";
-        String text2 = "Apache Lucene is an open-source, scalable, search storage engine";
-        String text3 = "Two of the most popular search engines Elasticsearch and Apache Solr are built on top of Lucene";
-        Document document1 = new Document();
-        document1.add(new TextField(fieldName, text1, Store.YES));
-        Document document2 = new Document();
-        document2.add(new TextField(fieldName, text2, Store.YES));
-        Document document3 = new Document();
-        document3.add(new TextField(fieldName, text3, Store.YES));
-
+    public static void createDoc(String fieldName, String text) throws IOException {
+        Document document = new Document();
+        document.add(new TextField(fieldName, text, Store.YES));
         IndexWriter indexWriter = new IndexWriter(directory, new IndexWriterConfig());
-        indexWriter.addDocument(document1);
-        indexWriter.addDocument(document2);
-        indexWriter.addDocument(document3);
+        indexWriter.addDocument(document);
         indexWriter.close();
     }
 
-    private static void deleteDocumentUsingTerm(Term term) throws IOException {
+    private static void updateDocumentUsingTerm(Term term, Document document) throws IOException {
         IndexWriter indexWriter = new IndexWriter(directory, new IndexWriterConfig());
-        indexWriter.deleteDocuments(term);
-        indexWriter.close();
-    }
-
-    private static void deleteDocumentUsingQuery(Query query) throws IOException {
-        IndexWriter indexWriter = new IndexWriter(directory, new IndexWriterConfig());
-        indexWriter.deleteDocuments(query);
+        indexWriter.updateDocument(term, document);
         indexWriter.close();
     }
 
@@ -93,6 +81,5 @@ public class DeleteDocumentUsingQueryExample {
         indexReader.close();
         return documents;
     }
-
 }
 

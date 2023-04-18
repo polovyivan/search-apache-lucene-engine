@@ -74,6 +74,7 @@ public class FirstIndex {
         // Close directory
         directory.close();
         // Remove directory with an index
+        // In case of an error the directory won't be removed, so you have to do it manually
         IOUtils.rm(indexPath);
     }
 }

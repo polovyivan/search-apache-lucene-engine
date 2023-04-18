@@ -1,4 +1,4 @@
-package com.polovyi.ivan.tutorials.v6;
+package com.polovyi.ivan.tutorials.manipulation;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -48,7 +48,6 @@ public class DeleteAllDocumentsExample {
     }
 
     public static void createDoc(String fieldName) throws IOException {
-        // Declare text to be added to an index
         String text1 = "Lucene is a Java library that lets you add a search to the application";
         String text2 = "Apache Lucene is an open-source, scalable, search storage engine";
         String text3 = "Two of the most popular search engines Elasticsearch and Apache Solr are built on top of Lucene";
